@@ -50,6 +50,7 @@ declare global {
 
     interface ListHeadingProps {
         title: string;
+        buttonText?: string;
     }
 }
 
