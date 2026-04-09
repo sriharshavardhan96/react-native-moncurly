@@ -6,9 +6,11 @@ const ListHeading = ({title, buttonText}: ListHeadingProps) => {
     <View className='list-head'>
       <Text className='list-title'>{title}</Text>
 
-      <TouchableOpacity className='list-action'>
-        <Text className='list-action-text'>{buttonText}</Text>
-      </TouchableOpacity>
+      {buttonText ? (
+        <TouchableOpacity className='list-action'>
+          <Text className='list-action-text'>{buttonText}</Text>
+        </TouchableOpacity>
+      ) : null}
     </View>
   )
 }
