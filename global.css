@@ -286,8 +286,16 @@
         @apply gap-2;
     }
 
+    .auth-label-row {
+        @apply flex-row items-center justify-between gap-3;
+    }
+
     .auth-label {
         @apply text-sm font-sans-semibold text-primary;
+    }
+
+    .auth-field-action {
+        @apply text-xs font-sans-bold text-accent;
     }
 
     .auth-input {

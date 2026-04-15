@@ -1,5 +1,5 @@
 import { formatCurrency, formatStatusLabel, formatSubscriptionDateTime } from "@/lib/utils";
-import clsx from "clsx";
+import { clsx } from "clsx";
 import React from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 
