@@ -1,15 +1,24 @@
-/* import { create } from 'zustand';
-import { HOME_SUBSCRIPTIONS } from '@/constants/data';
+import { HOME_SUBSCRIPTIONS } from "@/constants/data";
+import { useSyncExternalStore } from "react";
 
-interface SubscriptionStore {
-  subscriptions: Subscription[];
-  addSubscription: (subscription: Subscription) => void;
-  setSubscriptions: (subscriptions: Subscription[]) => void;
-}
+let subscriptions: Subscription[] = HOME_SUBSCRIPTIONS;
+const listeners = new Set<() => void>();
 
-export const useSubscriptionStore = create<SubscriptionStore>((set) => ({
-  subscriptions: HOME_SUBSCRIPTIONS,
-  addSubscription: (subscription) =>
-    set((state) => ({ subscriptions: [subscription, ...state.subscriptions] })),
-  setSubscriptions: (subscriptions) => set({ subscriptions }),
-})); */
+const emitChange = () => {
+  listeners.forEach((listener) => listener());
+};
+
+const subscribe = (listener: () => void) => {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+};
+
+const getSnapshot = () => subscriptions;
+
+export const addSubscription = (subscription: Subscription) => {
+  subscriptions = [subscription, ...subscriptions];
+  emitChange();
+};
+
+export const useSubscriptions = () =>
+  useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
