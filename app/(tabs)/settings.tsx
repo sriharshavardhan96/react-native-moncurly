@@ -15,6 +15,7 @@ const Settings = () => {
 
     const displayName = user?.firstName || user?.fullName || user?.emailAddresses[0]?.emailAddress || 'User';
     const email = user?.emailAddresses[0]?.emailAddress;
+    const displayId = user?.id ? (user.id.length > 20 ? `${user.id.substring(0, 20)}...` : user.id) : '';
 
 return (
 <SafeAreaView className="flex-1 bg-background p-5">
@@ -44,7 +45,7 @@ return (
                     <View className="flex-row justify-between items-center py-2">
                         <Text className="text-sm font-sans-medium text-muted-foreground">Account ID</Text>
                         <Text className="text-sm font-sans-medium text-primary" numberOfLines={1} ellipsizeMode="tail">
-                            {user?.id?.substring(0, 20) ?? ''}...
+                            {displayId}
                         </Text>
                     </View>
                     <View className="flex-row justify-between items-center py-2">
