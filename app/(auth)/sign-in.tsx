@@ -1,4 +1,4 @@
-import { useSignIn } from '@clerk/expo';
+import { useAuth, useSignIn } from '@clerk/expo';
 import { Link, useRouter, type Href } from 'expo-router';
 import { styled } from 'nativewind';
 import { useMemo, useState } from 'react';
@@ -40,6 +40,7 @@ const getFieldError = (
 
 const SignIn = () => {
     const { signIn, errors, fetchStatus } = useSignIn();
+    const { userId } = useAuth();
     const router = useRouter();
     const posthog = usePostHog();
 
@@ -75,7 +76,7 @@ const SignIn = () => {
             return;
         }
 
-        posthog.identify(email, { $set: { email } });
+        posthog.identify(userId ?? email, { $set: { email } });
         posthog.capture('user_signed_in', { method: 'password' });
         router.replace('/(tabs)' as Href);
     };

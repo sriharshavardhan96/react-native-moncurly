@@ -42,7 +42,7 @@ const getFieldError = (
 
 const SignUp = () => {
     const { signUp, errors, fetchStatus } = useSignUp();
-    const { isSignedIn } = useAuth();
+    const { isSignedIn, userId } = useAuth();
     const router = useRouter();
     const posthog = usePostHog();
 
@@ -133,8 +133,7 @@ const SignUp = () => {
             return;
         }
 
-        const userId = signUp.createdUserId ?? email;
-        posthog.identify(userId, {
+        posthog.identify(userId ?? email, {
             $set: { email },
             $set_once: { first_sign_up_date: new Date().toISOString() },
         });
