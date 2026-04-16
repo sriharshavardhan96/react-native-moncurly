@@ -1,6 +1,7 @@
 import images from '@/constants/images';
 import { useClerk, useUser } from '@clerk/expo';
 import { styled } from "nativewind";
+import { usePostHog } from 'posthog-react-native';
 import { Image, Pressable, Text, View } from 'react-native';
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 const SafeAreaView = styled(RNSafeAreaView);
@@ -8,18 +9,26 @@ const SafeAreaView = styled(RNSafeAreaView);
 const Settings = () => {
     const { signOut } = useClerk();
     const { user } = useUser();
+    const posthog = usePostHog();
 
     const handleSignOut = async () => {
-        await signOut();
+        posthog.capture('user_signed_out');
+        try {
+            await signOut();
+            // Only reset analytics after successful sign-out
+            posthog.reset();
+        } catch (error) {
+            console.error('Sign-out failed:', error);
+            // Don't reset analytics if sign-out failed
+        }
     };
 
     const displayName = user?.firstName || user?.fullName || user?.emailAddresses[0]?.emailAddress || 'User';
     const email = user?.emailAddresses[0]?.emailAddress;
     const displayId = user?.id ? (user.id.length > 20 ? `${user.id.substring(0, 20)}...` : user.id) : '';
 
-return (
-<SafeAreaView className="flex-1 bg-background p-5">
-            <Text>Settings</Text>
+    return (
+        <SafeAreaView className="flex-1 bg-background p-5">
             <Text className="text-3xl font-sans-bold text-primary mb-6">Settings</Text>
 
             {/* User Profile Section */}
@@ -64,7 +73,7 @@ return (
             >
                 <Text className="auth-button-text text-white">Sign Out</Text>
             </Pressable>
-</SafeAreaView>
-)
+        </SafeAreaView>
+    )
 }
 export default Settings;

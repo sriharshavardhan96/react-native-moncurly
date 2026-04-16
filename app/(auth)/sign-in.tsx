@@ -1,9 +1,10 @@
-import { useSignIn } from '@clerk/expo';
+import { useAuth, useSignIn } from '@clerk/expo';
 import { Link, useRouter, type Href } from 'expo-router';
 import { styled } from 'nativewind';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView as RNSafeAreaView } from 'react-native-safe-area-context';
+import { usePostHog } from 'posthog-react-native';
 
 const SafeAreaView = styled(RNSafeAreaView);
 
@@ -39,7 +40,9 @@ const getFieldError = (
 
 const SignIn = () => {
     const { signIn, errors, fetchStatus } = useSignIn();
+    const { userId } = useAuth();
     const router = useRouter();
+    const posthog = usePostHog();
 
     const [emailAddress, setEmailAddress] = useState('');
     const [password, setPassword] = useState('');
@@ -69,9 +72,12 @@ const SignIn = () => {
                 ...current,
                 general: getErrorMessage(error) ?? 'We could not finish signing you in. Please try again.',
             }));
+            posthog.capture('user_sign_in_failed', { reason: getErrorMessage(error) ?? 'finalize_error' });
             return;
         }
 
+        posthog.identify(userId ?? email, { $set: { email } });
+        posthog.capture('user_signed_in', { method: 'password' });
         router.replace('/(tabs)' as Href);
     };
 
@@ -101,6 +107,7 @@ const SignIn = () => {
                 ...current,
                 general: getErrorMessage(error) ?? 'We could not sign you in. Check your details and try again.',
             }));
+            posthog.capture('user_sign_in_failed', { reason: getErrorMessage(error) ?? 'password_error' });
             return;
         }
 
@@ -125,6 +132,7 @@ const SignIn = () => {
                     return;
                 }
 
+                posthog.capture('user_mfa_code_sent', { method: 'email_code' });
                 setNeedsEmailCode(true);
                 setCode('');
                 setLocalErrors({});

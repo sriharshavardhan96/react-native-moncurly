@@ -4,6 +4,7 @@ import { styled } from 'nativewind';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView as RNSafeAreaView } from 'react-native-safe-area-context';
+import { usePostHog } from 'posthog-react-native';
 
 const SafeAreaView = styled(RNSafeAreaView);
 
@@ -41,8 +42,9 @@ const getFieldError = (
 
 const SignUp = () => {
     const { signUp, errors, fetchStatus } = useSignUp();
-    const { isSignedIn } = useAuth();
+    const { isSignedIn, userId } = useAuth();
     const router = useRouter();
+    const posthog = usePostHog();
 
     const [emailAddress, setEmailAddress] = useState('');
     const [username, setUsername] = useState('');
@@ -127,9 +129,15 @@ const SignUp = () => {
                 ...current,
                 general: getErrorMessage(error) ?? 'We could not finish creating your account. Please try again.',
             }));
+            posthog.capture('user_sign_up_failed', { reason: getErrorMessage(error) ?? 'finalize_error' });
             return;
         }
 
+        posthog.identify(userId ?? email, {
+            $set: { email },
+            $set_once: { first_sign_up_date: new Date().toISOString() },
+        });
+        posthog.capture('user_signed_up', { method: 'password' });
         router.replace('/(tabs)' as Href);
     };
 
@@ -152,6 +160,7 @@ const SignUp = () => {
                 ...current,
                 general: getErrorMessage(passwordError) ?? 'We could not create your account. Please try again.',
             }));
+            posthog.capture('user_sign_up_failed', { reason: getErrorMessage(passwordError) ?? 'password_error' });
             return;
         }
 
